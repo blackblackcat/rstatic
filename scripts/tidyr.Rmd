@@ -1,0 +1,45 @@
+---
+title: "tidyr"
+author: "xm"
+date: "2020年7月4日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+gap_wide <- readr::read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder_wide.csv')
+
+gapminder <- read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv')
+
+head(gap_wide)
+
+head(gapminder)
+
+# gap_long <- gap_wide %>% gather(key=obstype_year,value=obs_value, dplyr::starts_with('pop'),dplyr::starts_with('lifeExp'),dplyr::starts_with('gdpPercap'))
+
+gap_long <- gap_wide %>% gather(key=obstype_year,value=obs_value, -continent,-country) %>% separate(obstype_year, into=c('obs_type','year'), sep='_')
+
+tail(gap_long)
+
+gap_long %>% group_by(continent, obs_type) %>% summarize(means = mean(obs_values))
+
+#数据格式转换
+gap_normal <- gap_long %>% spread(obs_type,obs_value) %>% select(country, year,pop, continent, lifeExp, gdpPercap)
+# gap_normal <- gap_normal[,names(gapminder)]
+
+# column整理：
+gap_normal <- gap_normal %>% arrange(country, continent, year)
+gap_normal <- gap_normal %>% mutate(year = as.integer(year))
+# 比较
+all.equal(gap_normal, gapminder)
+
+# gap_long回退到gap_wide
+gap_wide_new <- gap_long %>% unite(col = var_names, obs_type, year, sep = "_") %>% spread(key=var_names, value=obs_value)
+str(gap_wide_new)
+
+```
+
