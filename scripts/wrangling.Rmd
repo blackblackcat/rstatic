@@ -1,0 +1,55 @@
+---
+title: "data_wrangling"
+author: "xm"
+date: "2020年7月2日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+gapminder <- read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv')
+#gapminder
+
+head(gapminder, 10)
+tail(gapminder, 5)
+
+str(gapminder)
+names(gapminder)
+dim(gapminder)
+ncol(gapminder)
+nrow(gapminder)
+
+
+# 过滤，取数据子集  filter--row,select--column
+filter(gapminder, country=="Mexico", year==2002)
+
+filter(gapminder, country %in% c("Mexico", "Peru"))
+
+x <- filter(gapminder, country=="Sweden")
+mean(x$lifeExp)
+
+# pipe operator
+# %>% : crl + shift + m
+
+gapminder %>% filter(country=="Cambodia") %>% select(country, year, pop, gdpPercap)
+gapminder %>% filter(country=="Cambodia") %>% select(-continent, -lifeExp)
+
+# 增加列、变量
+gapminder %>% mutate(index=1:nrow(gapminder))
+gapminder %>% mutate(gdp=pop * gdpPercap)
+
+gapminder %>% select(-continent, -lifeExp) %>% filter(country=="Vietnam") %>% mutate(gdp=pop*gdpPercap) %>% mutate(max_gdp=max(gdp))
+
+gapminder %>% group_by(country) %>% mutate(gdp=pop*gdpPercap, max_gdp=max(gdp)) %>% ungroup() %>% tail(30)
+
+# 最终：
+gapminder %>% group_by(country) %>% mutate(gdp=pop*gdpPercap) %>% summarise(max_gdp=max(gdp)) %>% ungroup() %>% arrange(max_gdp)
+gapminder %>% filter(continent=="Asia") %>% group_by(country) %>% filter(lifeExp==max(lifeExp)) %>% arrange(desc(lifeExp))
+
+# max_gdp <- gapminder %>% dplyr::select(-continent,-lifeExp) %>% dplyr::group_by(country) %>% dplyr::mutate(gdp = pop * gdpPercap) %>% dplyr::summarize(max_gdp = max(gdp)) %>% dplyr::ungroup() 
+```
+
